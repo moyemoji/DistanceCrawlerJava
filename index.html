@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head><title>计算驾车时间与距离</title>
+<style>
+body,html,#allmap{width:100%;height:100%;overflow:hidden;margin:0;font-family:"微软雅黑";}
+.btn-container{position:absolute;right:30px;top:30px;}
+.btn-container button {outline: none;border: 2px solid #000;background-color: #000;color: #fff;
+padding: 10px 15px;cursor: pointer;box-shadow: 0px 0px 3px #555;margin-right: 10px;font-weight: 600;}
+.btn-container input{border: 2px solid #000;box-shadow: 0px 0px 3px #555;margin-right: 10px;
+font-weight: 600;padding: 10px 15px;}
+.btn-container button:hover {background-color: #fff;color: #000;}
+</style>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=GNze796xUWAyke2lcpfAsjoA5Tmo0Ijh"></script>
+</head>
+<body>
+<div id="allmap"></div>
+<div class='btn-container'>
+<button id='btnGetDistance'>开始获取距离及持续时间</button>
+<input id='dataInput' type='text'>
+<input id='resultInput' type='text'>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+var map = new BMap.Map("allmap");
+map.centerAndZoom(new BMap.Point(113.3176, 23.1123), 12);
+map.enableScrollWheelZoom();
+var searchComplete = function(results) {if (transit.getStatus() != BMAP_STATUS_SUCCESS) { return }
+var plan = results.getPlan(0);
+var distance = plan.getDistance(false);
+var duration = plan.getDuration(false);
+updatePage(distance, duration);}
+var transit = new BMap.DrivingRoute(map, {
+renderOptions: {map: map},
+onSearchComplete: searchComplete,
+onMarkersSet: function(routes) {
+map.removeOverlay(routes[0].marker);
+map.removeOverlay(routes[1].marker);}
+});
+function getDistance(startid, endid, lonstart, latstart, lonend, latend) {
+var p1 = new BMap.Point(lonstart, latstart);
+var p2 = new BMap.Point(lonend, latend);
+transit.search(p1, p2);}
+function updatePage(distance, duration){
+var results_str = "{'startid':"+startid+", 'endid':"+endid+", 'distance':"+distance+", 'duration':"+duration+"}";
+document.getElementById("resultInput").value = results_str;}
+btnGetDistance.onclick = function() {
+var dataInput = document.getElementById("dataInput").value;
+var dataInput = JSON.parse(dataInput);
+startid = dataInput.startid;
+endid = dataInput.endid;
+lonstart = dataInput.lonstart;
+latstart = dataInput.latstart;
+lonend = dataInput.lonend;
+latend = dataInput.latend;
+if(lonstart==lonend && latstart==latend){updatePage(0,0)}
+else{getDistance(startid, endid, lonstart, latstart, lonend, latend);}}
+</script>
+
